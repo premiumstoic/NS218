@@ -19,6 +19,8 @@ type CommentWithProfile = BaseComment & {
     id: string;
     display_name: string | null;
     email: string | null;
+    theme_token: string | null;
+    avatar_url: string | null;
   } | null;
 };
 
@@ -37,7 +39,7 @@ export async function CommentSection({ targetType, targetId }: CommentSectionPro
 
   if (profile && comments && comments.length > 0) {
     const authorIds = [...new Set(comments.map((comment) => comment.author_id))];
-    const { data: profiles } = await supabase.from("profiles").select("id,display_name,email").in("id", authorIds);
+    const { data: profiles } = await supabase.from("profiles").select("id,display_name,email,theme_token,avatar_url").in("id", authorIds);
 
     const byId = new Map((profiles ?? []).map((entry) => [entry.id, entry]));
     mergedComments = comments.map((comment) => ({

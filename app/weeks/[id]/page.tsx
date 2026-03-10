@@ -3,27 +3,41 @@ import { notFound } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { CONTENT_TYPE_LABELS } from "@/lib/constants";
 import { CommentSection } from "@/components/discussion/comment-section";
+import { getCurrentProfile } from "@/lib/auth";
+import { getThemeCardStyle } from "@/lib/theme";
 
 export default async function WeekDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const supabase = await createSupabaseServerClient();
+  const currentProfile = await getCurrentProfile();
 
   const [{ data: week }, { data: content }, { data: uploads }] = await Promise.all([
-    supabase.from("weeks").select("*").eq("id", id).maybeSingle(),
+    supabase.from("weeks").select("*").eq("id", id).eq("published", true).is("archived_at", null).maybeSingle(),
     supabase
       .from("content_items")
       .select("id,type,title,published_at")
       .eq("week_id", id)
+      .not("published_at", "is", null)
       .order("updated_at", { ascending: false }),
     supabase
       .from("uploads")
-      .select("id,title,mime_type,file_url,created_at")
+      .select("id,title,mime_type,file_url,created_at,uploader_id")
       .eq("week_id", id)
+      .eq("status", "published")
       .order("created_at", { ascending: false })
   ]);
 
   if (!week) {
     notFound();
+  }
+
+  const uploadThemeByUserId = new Map<string, string>();
+  if (currentProfile && uploads && uploads.length > 0) {
+    const uploaderIds = [...new Set(uploads.map((upload) => upload.uploader_id))];
+    const { data: uploaderProfiles } = await supabase.from("profiles").select("id,theme_token").in("id", uploaderIds);
+    uploaderProfiles?.forEach((entry) => {
+      uploadThemeByUserId.set(entry.id, entry.theme_token ?? "sage");
+    });
   }
 
   return (
@@ -64,7 +78,11 @@ export default async function WeekDetailPage({ params }: { params: Promise<{ id:
         <div className="grid">
           {(uploads ?? []).length === 0 ? <p className="subtle">No uploads yet.</p> : null}
           {(uploads ?? []).map((upload) => (
-            <article key={upload.id} className="card" style={{ background: "var(--surface-soft)" }}>
+            <article
+              key={upload.id}
+              className="card"
+              style={getThemeCardStyle(uploadThemeByUserId.get(upload.uploader_id))}
+            >
               <p style={{ marginBottom: "0.35rem" }}>
                 <strong>{upload.title}</strong>
               </p>

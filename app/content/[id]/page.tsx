@@ -32,9 +32,22 @@ export default async function ContentDetailPage({ params }: { params: Promise<{ 
     .from("content_items")
     .select("id,week_id,type,title,body,published_at")
     .eq("id", id)
+    .not("published_at", "is", null)
     .maybeSingle();
 
   if (!content) {
+    notFound();
+  }
+
+  const { data: week } = await supabase
+    .from("weeks")
+    .select("id")
+    .eq("id", content.week_id)
+    .eq("published", true)
+    .is("archived_at", null)
+    .maybeSingle();
+
+  if (!week) {
     notFound();
   }
 

@@ -25,7 +25,20 @@ export async function POST(request: Request) {
       throw error;
     }
 
-    return NextResponse.json({ comment: data }, { status: 201 });
+    return NextResponse.json(
+      {
+        comment: {
+          ...data,
+          profiles: {
+            display_name: auth.profile.display_name ?? null,
+            email: auth.profile.email ?? null,
+            theme_token: auth.profile.theme_token ?? "sage",
+            avatar_url: auth.profile.avatar_url ?? null
+          }
+        }
+      },
+      { status: 201 }
+    );
   } catch (error) {
     return apiError(error);
   }

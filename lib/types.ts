@@ -1,4 +1,5 @@
 export type Role = "teacher" | "student";
+export type ThemeToken = "sage" | "ocean" | "amber" | "rose" | "slate";
 
 export type ContentType =
   | "note"
@@ -14,6 +15,8 @@ export interface Profile {
   email: string;
   display_name: string | null;
   role: Role;
+  avatar_url: string | null;
+  theme_token: ThemeToken;
   created_at: string;
 }
 
@@ -26,6 +29,8 @@ export interface Week {
   start_date: string;
   is_exam_week: boolean;
   published: boolean;
+  archived_at: string | null;
+  archived_by: string | null;
   created_at: string;
 }
 

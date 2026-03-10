@@ -1,9 +1,11 @@
 import Link from "next/link";
-import { getCurrentProfile } from "@/lib/auth";
+import type { Profile } from "@/lib/types";
 
-export async function NavBar() {
-  const profile = await getCurrentProfile();
+interface NavBarProps {
+  profile: Profile | null;
+}
 
+export function NavBar({ profile }: NavBarProps) {
   return (
     <header className="nav">
       <div className="nav-inner">

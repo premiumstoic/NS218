@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
-import { getTeacherEmailSet } from "@/lib/env";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { ensureProfileForUser, type AuthUser, type MinimalSupabaseClient } from "@/lib/profile";
 
 export async function getSessionUser() {
   const supabase = await createSupabaseServerClient();
@@ -18,31 +18,11 @@ export async function syncProfileForCurrentUser() {
   const { data: authData } = await supabase.auth.getUser();
   const user = authData.user;
 
-  if (!user?.email) {
+  if (!user) {
     return null;
   }
 
-  const isTeacher = getTeacherEmailSet().has(user.email.toLowerCase());
-
-  const { data, error } = await supabase
-    .from("profiles")
-    .upsert(
-      {
-        id: user.id,
-        email: user.email,
-        display_name: user.user_metadata?.display_name ?? user.email,
-        role: isTeacher ? "teacher" : "student"
-      },
-      { onConflict: "id" }
-    )
-    .select("*")
-    .single();
-
-  if (error) {
-    throw error;
-  }
-
-  return data;
+  return ensureProfileForUser(supabase as unknown as MinimalSupabaseClient, user as unknown as AuthUser);
 }
 
 export async function getCurrentProfile() {

@@ -21,7 +21,9 @@ export default async function TeacherDashboardPage() {
     supabase.from("uploads").select("id,title,status,created_at").order("created_at", { ascending: false }).limit(20)
   ]);
 
-  const weekOptions: ContentEditorWeekOption[] = ((weeks ?? []) as Array<Record<string, unknown>>).map((week) => ({
+  const activeWeeks = ((weeks ?? []) as Array<Record<string, unknown>>).filter((week) => !week.archived_at);
+
+  const weekOptions: ContentEditorWeekOption[] = activeWeeks.map((week) => ({
     id: String(week.id),
     week_index: Number(week.week_index),
     title: String(week.title)
@@ -34,7 +36,8 @@ export default async function TeacherDashboardPage() {
     act: week.act ? String(week.act) : null,
     start_date: String(week.start_date),
     published: Boolean(week.published),
-    is_exam_week: Boolean(week.is_exam_week)
+    is_exam_week: Boolean(week.is_exam_week),
+    archived_at: week.archived_at ? String(week.archived_at) : null
   }));
 
   const editableContent: EditableContent[] = ((content ?? []) as Array<Record<string, unknown>>).map((item) => ({
@@ -61,6 +64,7 @@ export default async function TeacherDashboardPage() {
 
       <section className="card">
         <h2 className="section-title">Week Manager</h2>
+        <p className="subtle">Archive hides a week from public/student pages. Restore makes it visible again.</p>
         <div className="grid" style={{ gridTemplateColumns: "repeat(auto-fit,minmax(300px,1fr))" }}>
           {editableWeeks.map((week) => (
             <WeekEditForm key={week.id} week={week} />

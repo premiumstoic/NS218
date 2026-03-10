@@ -1,5 +1,7 @@
 :root {
   --bg: #f4f8f2;
+  --bg-spot: #e3efe0;
+  --bg-alt: #f8fbf7;
   --surface: #ffffff;
   --surface-soft: #edf3e8;
   --ink: #1e2a22;
@@ -7,6 +9,9 @@
   --accent: #0f8a5f;
   --accent-strong: #076646;
   --line: #cbd8ce;
+  --badge-bg: #def8ec;
+  --latest-from: #f4fbf7;
+  --latest-to: #eef8f2;
   --danger: #9b1c1c;
   --radius: 14px;
 }
@@ -20,11 +25,12 @@ body {
   margin: 0;
   padding: 0;
   color: var(--ink);
-  background: radial-gradient(circle at 5% 0%, #e3efe0 0%, #f4f8f2 45%, #f8fbf7 100%);
+  background: radial-gradient(circle at 5% 0%, var(--bg-spot) 0%, var(--bg) 45%, var(--bg-alt) 100%);
 }
 
 body {
   min-height: 100vh;
+  background: radial-gradient(circle at 5% 0%, var(--bg-spot) 0%, var(--bg) 45%, var(--bg-alt) 100%);
 }
 
 a {
@@ -172,7 +178,7 @@ textarea {
   font-size: 0.78rem;
   font-weight: 700;
   color: var(--accent-strong);
-  background: #def8ec;
+  background: var(--badge-bg);
 }
 
 .row {
@@ -206,6 +212,62 @@ textarea {
 .form-stack > label > select,
 .form-stack > label > textarea {
   margin-top: 0.3rem;
+}
+
+.latest-carousel {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.latest-slide {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 0.9rem;
+  background: linear-gradient(135deg, var(--latest-from) 0%, var(--latest-to) 100%);
+}
+
+.carousel-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  justify-content: space-between;
+}
+
+.carousel-dots {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.carousel-dot {
+  width: 10px;
+  height: 10px;
+  padding: 0;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: #fff;
+}
+
+.carousel-dot.active {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.theme-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(92px, 1fr));
+  gap: 0.5rem;
+}
+
+.theme-option {
+  color: var(--ink);
+  border: 1px solid var(--line);
+  font-weight: 700;
+}
+
+.theme-option.active {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
 }
 
 pre {

@@ -5,7 +5,12 @@ import { apiError } from "@/lib/api";
 export async function GET() {
   try {
     const supabase = await createSupabaseServerClient();
-    const { data, error } = await supabase.from("weeks").select("*").order("week_index", { ascending: true });
+    const { data, error } = await supabase
+      .from("weeks")
+      .select("*")
+      .eq("published", true)
+      .is("archived_at", null)
+      .order("week_index", { ascending: true });
 
     if (error) {
       throw error;

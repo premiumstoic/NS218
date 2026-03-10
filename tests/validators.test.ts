@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { weekCreateSchema, quizAttemptSchema } from "../lib/validators/api";
+import { profilePatchSchema, quizAttemptSchema, weekCreateSchema } from "../lib/validators/api";
 
 describe("API validators", () => {
   it("accepts valid week payload", () => {
@@ -18,5 +18,18 @@ describe("API validators", () => {
 
   it("rejects invalid quiz attempt payload", () => {
     expect(() => quizAttemptSchema.parse({ answers: [] })).toThrow();
+  });
+
+  it("accepts valid profile theme token", () => {
+    const parsed = profilePatchSchema.parse({
+      display_name: "Test User",
+      theme_token: "ocean"
+    });
+
+    expect(parsed.theme_token).toBe("ocean");
+  });
+
+  it("rejects invalid profile theme token", () => {
+    expect(() => profilePatchSchema.parse({ theme_token: "purple" })).toThrow();
   });
 });

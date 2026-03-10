@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useMemo, useState } from "react";
+import { getThemeCardStyle } from "@/lib/theme";
 
 type CommentRecord = {
   id: string;
@@ -10,6 +11,8 @@ type CommentRecord = {
   profiles?: {
     display_name: string | null;
     email: string | null;
+    theme_token: string | null;
+    avatar_url: string | null;
   } | null;
 };
 
@@ -90,11 +93,24 @@ export function CommentSectionClient({
         {sorted.length === 0 ? <p className="subtle">No comments yet.</p> : null}
         {sorted.map((comment) => {
           const canDelete = Boolean(currentUserId && (currentUserId === comment.author_id || isTeacher));
+          const themeStyle = getThemeCardStyle(comment.profiles?.theme_token);
+          const authorName = comment.profiles?.display_name ?? comment.profiles?.email ?? "Class member";
 
           return (
-            <article key={comment.id} className="card" style={{ background: "var(--surface-soft)" }}>
+            <article key={comment.id} className="card" style={themeStyle}>
               <div className="row">
-                <strong>{comment.profiles?.display_name ?? comment.profiles?.email ?? "Class member"}</strong>
+                <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                  {comment.profiles?.avatar_url ? (
+                    <img
+                      src={comment.profiles.avatar_url}
+                      alt={authorName}
+                      width={28}
+                      height={28}
+                      style={{ borderRadius: "999px", objectFit: "cover" }}
+                    />
+                  ) : null}
+                  <strong>{authorName}</strong>
+                </div>
                 <span className="subtle">{new Date(comment.created_at).toLocaleString()}</span>
               </div>
               <p style={{ marginBottom: "0.5rem" }}>{comment.body}</p>

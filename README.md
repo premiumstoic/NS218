@@ -37,6 +37,7 @@ cp .env.example .env.local
 
 - `db/migrations/001_init.sql`
 - `db/migrations/002_increase_course_files_limit_25mb.sql`
+- `db/migrations/003_week_archive_profile_personalization_google.sql`
 - `db/seed/001_ns218_weeks.sql`
 
 5. Run local app:
@@ -50,6 +51,10 @@ npm run dev
 - Open signup is enabled.
 - New users default to `student`.
 - `teacher` role is assigned by email list in `TEACHER_EMAILS`.
+- Email/password and Google OAuth are both supported.
+- For Google OAuth, configure Supabase Auth provider and include callback URLs:
+  - Local: `http://localhost:3000/auth/callback`
+  - Production: `https://<your-domain>/auth/callback`
 
 ## Storage
 
@@ -57,7 +62,7 @@ npm run dev
 - Max file size: `25 MB`
 - Allowed file types:
   - PDF
-  - PNG/JPG/WEBP
+  - Images (auto-compressed client-side to WEBP when needed)
   - DOC/DOCX
   - PPT/PPTX
 - Upload flow: files go directly from browser to Supabase Storage, then metadata is saved through `POST /api/uploads`.
@@ -69,14 +74,18 @@ npm run dev
 - `GET /api/weeks/:id/content`
 - `POST /api/teacher/weeks`
 - `PATCH /api/teacher/weeks/:id`
+- `DELETE /api/teacher/weeks/:id` (archive)
+- `POST /api/teacher/weeks/:id/restore`
 - `POST /api/teacher/content`
 - `PATCH /api/teacher/content/:id`
+- `PATCH /api/profile`
 - `POST /api/uploads`
 - `POST /api/comments`
 - `DELETE /api/comments/:id`
 - `POST /api/quizzes/:id/attempts`
 - `GET /api/quizzes/:id/attempts/me`
 - `PATCH /api/teacher/uploads/:id`
+- `GET /auth/callback`
 
 ## Important paths
 

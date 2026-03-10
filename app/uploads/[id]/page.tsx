@@ -12,11 +12,24 @@ export default async function UploadDetailPage({ params }: { params: Promise<{ i
 
   const { data: upload } = await supabase
     .from("uploads")
-    .select("id,title,mime_type,file_url,created_at")
+    .select("id,title,mime_type,file_url,created_at,week_id")
     .eq("id", id)
+    .eq("status", "published")
     .maybeSingle();
 
   if (!upload) {
+    notFound();
+  }
+
+  const { data: week } = await supabase
+    .from("weeks")
+    .select("id")
+    .eq("id", upload.week_id)
+    .eq("published", true)
+    .is("archived_at", null)
+    .maybeSingle();
+
+  if (!week) {
     notFound();
   }
 

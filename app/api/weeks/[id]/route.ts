@@ -6,7 +6,13 @@ export async function GET(_request: Request, context: { params: Promise<{ id: st
   try {
     const { id } = await context.params;
     const supabase = await createSupabaseServerClient();
-    const { data, error } = await supabase.from("weeks").select("*").eq("id", id).single();
+    const { data, error } = await supabase
+      .from("weeks")
+      .select("*")
+      .eq("id", id)
+      .eq("published", true)
+      .is("archived_at", null)
+      .single();
 
     if (error) {
       throw error;

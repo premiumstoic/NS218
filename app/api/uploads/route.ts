@@ -12,6 +12,18 @@ export async function POST(request: Request) {
 
     const payload = await parseJsonBody(request, uploadMetadataCreateSchema);
 
+    const { data: activeWeek, error: weekError } = await auth.supabase
+      .from("weeks")
+      .select("id")
+      .eq("id", payload.week_id)
+      .eq("published", true)
+      .is("archived_at", null)
+      .maybeSingle();
+
+    if (weekError || !activeWeek) {
+      return NextResponse.json({ error: "Selected week is not available for uploads" }, { status: 400 });
+    }
+
     const { data: uploadRow, error: insertError } = await auth.supabase
       .from("uploads")
       .insert({

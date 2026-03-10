@@ -1,13 +1,20 @@
 import { requireAuth } from "@/lib/auth";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { UploadForm, type UploadWeekOption } from "@/components/forms/upload-form";
+import { getThemeCardStyle } from "@/lib/theme";
 
 export default async function StudentUploadsPage() {
   const profile = await requireAuth();
   const supabase = await createSupabaseServerClient();
+  const ownThemeStyle = getThemeCardStyle(profile.theme_token);
 
   const [{ data: weeks }, { data: ownUploads }] = await Promise.all([
-    supabase.from("weeks").select("id,week_index,title").eq("published", true).order("week_index", { ascending: true }),
+    supabase
+      .from("weeks")
+      .select("id,week_index,title")
+      .eq("published", true)
+      .is("archived_at", null)
+      .order("week_index", { ascending: true }),
     supabase
       .from("uploads")
       .select("id,title,mime_type,file_url,created_at")
@@ -37,7 +44,7 @@ export default async function StudentUploadsPage() {
         {(ownUploads ?? []).length === 0 ? <p className="subtle">No uploads yet.</p> : null}
         <div className="grid">
           {(ownUploads ?? []).map((upload) => (
-            <article key={upload.id} className="card" style={{ background: "var(--surface-soft)" }}>
+            <article key={upload.id} className="card" style={ownThemeStyle}>
               <p>
                 <strong>{upload.title}</strong>
               </p>

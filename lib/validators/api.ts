@@ -80,3 +80,9 @@ export const uploadMetadataCreateSchema = z.object({
     .max(MAX_UPLOAD_SIZE_BYTES, `File too large. Maximum is ${MAX_UPLOAD_SIZE_BYTES} bytes.`)
     .optional()
 });
+
+export const profilePatchSchema = z.object({
+  display_name: z.string().trim().min(1).max(120).optional(),
+  avatar_url: z.string().url().nullable().optional(),
+  theme_token: z.enum(["sage", "ocean", "amber", "rose", "slate"]).optional()
+});

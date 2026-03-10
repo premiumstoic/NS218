@@ -15,6 +15,7 @@ export function AuthForm({ mode }: AuthFormProps) {
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [oauthLoading, setOauthLoading] = useState(false);
 
   const isSignup = mode === "signup";
 
@@ -58,6 +59,26 @@ export function AuthForm({ mode }: AuthFormProps) {
     setLoading(false);
   }
 
+  async function onGoogleSignIn() {
+    setOauthLoading(true);
+    setMessage(null);
+
+    const supabase = createSupabaseBrowserClient();
+    const redirectTo = `${window.location.origin}/auth/callback?next=${encodeURIComponent("/profile")}`;
+
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo
+      }
+    });
+
+    if (error) {
+      setMessage(error.message);
+      setOauthLoading(false);
+    }
+  }
+
   return (
     <form className="card form-stack auth-form" onSubmit={onSubmit}>
       <h1 className="page-title" style={{ fontFamily: "var(--font-display), sans-serif" }}>
@@ -94,6 +115,9 @@ export function AuthForm({ mode }: AuthFormProps) {
       </div>
 
       <button disabled={loading}>{loading ? "Working..." : isSignup ? "Create account" : "Login"}</button>
+      <button type="button" className="secondary" disabled={oauthLoading} onClick={onGoogleSignIn}>
+        {oauthLoading ? "Redirecting..." : "Continue with Google"}
+      </button>
       {message ? <p className="subtle">{message}</p> : null}
     </form>
   );

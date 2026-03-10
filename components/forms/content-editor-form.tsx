@@ -49,6 +49,10 @@ export function ContentEditorForm({ weeks }: { weeks: ContentEditorWeekOption[] 
 
   async function onSubmit(event: FormEvent) {
     event.preventDefault();
+    if (!weekId) {
+      setStatus("Create or restore at least one active week before creating content.");
+      return;
+    }
 
     let flashcards: unknown;
     let questions: unknown;
@@ -95,7 +99,7 @@ export function ContentEditorForm({ weeks }: { weeks: ContentEditorWeekOption[] 
 
       <label>
         Week
-        <select value={weekId} onChange={(e) => setWeekId(e.target.value)} required>
+        <select value={weekId} onChange={(e) => setWeekId(e.target.value)} required disabled={weeks.length === 0}>
           {weeks.map((week) => (
             <option key={week.id} value={week.id}>
               Week {week.week_index}: {week.title}
@@ -103,6 +107,7 @@ export function ContentEditorForm({ weeks }: { weeks: ContentEditorWeekOption[] 
           ))}
         </select>
       </label>
+      {weeks.length === 0 ? <p className="subtle">No active weeks available. Restore or create a week first.</p> : null}
 
       <label>
         Content type

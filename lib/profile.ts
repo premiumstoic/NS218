@@ -5,6 +5,10 @@ export interface AuthUser {
   email?: string;
   user_metadata?: {
     display_name?: string;
+    full_name?: string;
+    name?: string;
+    avatar_url?: string;
+    picture?: string;
   };
 }
 
@@ -13,6 +17,8 @@ type ProfileRecord = {
   email: string;
   display_name: string | null;
   role: "teacher" | "student";
+  avatar_url?: string | null;
+  theme_token?: "sage" | "ocean" | "amber" | "rose" | "slate";
 };
 
 type QueryError = { message: string } | null;
@@ -39,6 +45,10 @@ export async function ensureProfileForUser(supabase: MinimalSupabaseClient, user
     return null;
   }
 
+  const fallbackDisplayName = user.user_metadata?.display_name ?? user.user_metadata?.full_name ?? user.user_metadata?.name ?? user.email;
+  const fallbackAvatarUrl = user.user_metadata?.avatar_url ?? user.user_metadata?.picture ?? null;
+
+  const existingProfile = await getProfileByUserId(supabase, user.id);
   const teacherEmails = getTeacherEmailSet();
   const role = teacherEmails.has(user.email.toLowerCase()) ? "teacher" : "student";
 
@@ -48,7 +58,9 @@ export async function ensureProfileForUser(supabase: MinimalSupabaseClient, user
       {
         id: user.id,
         email: user.email,
-        display_name: user.user_metadata?.display_name ?? user.email,
+        display_name: existingProfile ? (existingProfile.display_name ?? fallbackDisplayName) : fallbackDisplayName,
+        avatar_url: existingProfile ? (existingProfile.avatar_url ?? null) : fallbackAvatarUrl,
+        theme_token: existingProfile ? (existingProfile.theme_token ?? "sage") : "sage",
         role
       },
       { onConflict: "id" }

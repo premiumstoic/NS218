@@ -3,7 +3,12 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 export default async function WeeksPage() {
   const supabase = await createSupabaseServerClient();
-  const { data: weeks } = await supabase.from("weeks").select("*").order("week_index", { ascending: true });
+  const { data: weeks } = await supabase
+    .from("weeks")
+    .select("*")
+    .eq("published", true)
+    .is("archived_at", null)
+    .order("week_index", { ascending: true });
 
   return (
     <div className="grid">

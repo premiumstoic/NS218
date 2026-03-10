@@ -2,6 +2,9 @@ import type { Metadata } from "next";
 import { Space_Grotesk, Literata } from "next/font/google";
 import "./globals.css";
 import { NavBar } from "@/components/layout/nav";
+import { getCurrentProfile } from "@/lib/auth";
+import { getAppThemeVariables } from "@/lib/theme";
+import type { CSSProperties } from "react";
 
 const displayFont = Space_Grotesk({
   variable: "--font-display",
@@ -18,15 +21,22 @@ export const metadata: Metadata = {
   description: "Weekly notes, flashcards, quizzes, simulations and class discussion for NS218."
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const profile = await getCurrentProfile();
+  const themeVars = getAppThemeVariables(profile?.theme_token);
+  const bodyStyle = {
+    fontFamily: "var(--font-text), serif",
+    ...themeVars
+  } as CSSProperties;
+
   return (
     <html lang="en" className={`${displayFont.variable} ${textFont.variable}`}>
-      <body style={{ fontFamily: "var(--font-text), serif" }}>
-        <NavBar />
+      <body style={bodyStyle}>
+        <NavBar profile={profile} />
         <main>{children}</main>
       </body>
     </html>

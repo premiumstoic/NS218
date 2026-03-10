@@ -4,6 +4,7 @@ import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 import { ACCEPTED_UPLOAD_MIME_TYPES, MAX_UPLOAD_SIZE_BYTES } from "@/lib/constants";
+import { compressImageForUpload } from "@/lib/image-compression";
 
 export type UploadWeekOption = {
   id: string;
@@ -33,19 +34,44 @@ export function UploadForm({ weeks, onUploaded }: UploadFormProps) {
       return;
     }
 
-    if (!ACCEPTED_UPLOAD_MIME_TYPES.includes(file.type)) {
-      setError(`Unsupported file type: ${file.type}`);
-      return;
-    }
-
-    if (file.size > MAX_UPLOAD_SIZE_BYTES) {
-      setError(`File is too large. Maximum is ${Math.round(MAX_UPLOAD_SIZE_BYTES / (1024 * 1024))} MB.`);
-      return;
-    }
-
     setLoading(true);
     setStatus(null);
     setError(null);
+
+    let uploadFile = file;
+
+    if (file.type.startsWith("image/")) {
+      try {
+        setStatus("Compressing image...");
+        uploadFile = await compressImageForUpload(file, {
+          maxBytes: MAX_UPLOAD_SIZE_BYTES,
+          maxWidth: 3200,
+          maxHeight: 3200,
+          outputType: "image/webp",
+          forceTransform: !ACCEPTED_UPLOAD_MIME_TYPES.includes(file.type) || file.size > MAX_UPLOAD_SIZE_BYTES
+        });
+      } catch (compressionError) {
+        const message = compressionError instanceof Error ? compressionError.message : "Image compression failed";
+        setError(message);
+        setStatus(null);
+        setLoading(false);
+        return;
+      }
+    }
+
+    if (!ACCEPTED_UPLOAD_MIME_TYPES.includes(uploadFile.type)) {
+      setError(`Unsupported file type: ${uploadFile.type}`);
+      setStatus(null);
+      setLoading(false);
+      return;
+    }
+
+    if (uploadFile.size > MAX_UPLOAD_SIZE_BYTES) {
+      setError(`File is too large. Maximum is ${Math.round(MAX_UPLOAD_SIZE_BYTES / (1024 * 1024))} MB.`);
+      setStatus(null);
+      setLoading(false);
+      return;
+    }
 
     const supabase = createSupabaseBrowserClient();
     const { data: authData, error: authError } = await supabase.auth.getUser();
@@ -55,11 +81,12 @@ export function UploadForm({ weeks, onUploaded }: UploadFormProps) {
       return;
     }
 
-    const sanitized = file.name.replace(/[^a-zA-Z0-9_.-]/g, "_");
+    const sanitized = uploadFile.name.replace(/[^a-zA-Z0-9_.-]/g, "_");
     const storagePath = `week-${weekId}/${authData.user.id}/${Date.now()}-${sanitized}`;
 
-    const { error: storageError } = await supabase.storage.from("course-files").upload(storagePath, file, {
-      contentType: file.type,
+    setStatus("Uploading...");
+    const { error: storageError } = await supabase.storage.from("course-files").upload(storagePath, uploadFile, {
+      contentType: uploadFile.type,
       upsert: false
     });
 
@@ -80,9 +107,9 @@ export function UploadForm({ weeks, onUploaded }: UploadFormProps) {
         title: title.trim(),
         week_id: weekId,
         file_url: publicUrlData.publicUrl,
-        mime_type: file.type,
+        mime_type: uploadFile.type,
         storage_path: storagePath,
-        size_bytes: file.size
+        size_bytes: uploadFile.size
       })
     });
 
@@ -108,7 +135,7 @@ export function UploadForm({ weeks, onUploaded }: UploadFormProps) {
   return (
     <form className="card form-stack" onSubmit={onSubmit}>
       <h3 className="section-title">Upload Class Material</h3>
-      <p className="subtle">Allowed: PDF, PNG/JPG/WEBP, DOC/DOCX, PPT/PPTX (max 25 MB)</p>
+      <p className="subtle">Allowed: PDF, images (auto-compressed), DOC/DOCX, PPT/PPTX (max 25 MB)</p>
 
       <div className="field">
         <label htmlFor="upload-title">Title</label>
@@ -133,7 +160,7 @@ export function UploadForm({ weeks, onUploaded }: UploadFormProps) {
           id="upload-file"
           type="file"
           onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-          accept=".pdf,.png,.jpg,.jpeg,.webp,.doc,.docx,.ppt,.pptx"
+          accept="image/*,.pdf,.doc,.docx,.ppt,.pptx"
           required
         />
       </div>
