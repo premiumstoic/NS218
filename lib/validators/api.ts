@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { ACCEPTED_UPLOAD_MIME_TYPES, MAX_UPLOAD_SIZE_BYTES } from "@/lib/constants";
 
 export const weekCreateSchema = z.object({
   course_code: z.string().min(1).default("NS218"),
@@ -62,4 +63,20 @@ export const quizAttemptSchema = z.object({
 
 export const uploadModerationSchema = z.object({
   status: z.enum(["published", "hidden"])
+});
+
+export const uploadMetadataCreateSchema = z.object({
+  title: z.string().min(1).max(300),
+  week_id: z.string().uuid(),
+  file_url: z.string().url(),
+  mime_type: z.string().refine((value) => ACCEPTED_UPLOAD_MIME_TYPES.includes(value), {
+    message: "Unsupported MIME type"
+  }),
+  storage_path: z.string().min(1).max(500).optional(),
+  size_bytes: z
+    .number()
+    .int()
+    .positive()
+    .max(MAX_UPLOAD_SIZE_BYTES, `File too large. Maximum is ${MAX_UPLOAD_SIZE_BYTES} bytes.`)
+    .optional()
 });

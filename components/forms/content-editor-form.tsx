@@ -90,7 +90,7 @@ export function ContentEditorForm({ weeks }: { weeks: ContentEditorWeekOption[] 
   }
 
   return (
-    <form className="card" onSubmit={onSubmit}>
+    <form className="card form-stack" onSubmit={onSubmit}>
       <h3 className="section-title">Create Content Item</h3>
 
       <label>
@@ -117,7 +117,7 @@ export function ContentEditorForm({ weeks }: { weeks: ContentEditorWeekOption[] 
 
       <label>
         Title
-        <input value={title} onChange={(e) => setTitle(e.target.value)} required />
+        <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} required />
       </label>
 
       <label>

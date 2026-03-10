@@ -33,4 +33,6 @@ export const ACCEPTED_UPLOAD_EXTENSIONS = [
   ".pptx"
 ];
 
+export const MAX_UPLOAD_SIZE_BYTES = 25 * 1024 * 1024;
+
 export const BUILTIN_SIMULATION_KINDS = ["random-walk", "binding-curve"] as const;

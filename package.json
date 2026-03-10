@@ -9,7 +9,8 @@
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "smoke:real": "set -a && source .env.local && set +a && node scripts/smoke-real-db.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.5.2",

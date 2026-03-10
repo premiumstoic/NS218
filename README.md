@@ -36,6 +36,7 @@ cp .env.example .env.local
 4. Apply database schema and seed in Supabase SQL editor:
 
 - `db/migrations/001_init.sql`
+- `db/migrations/002_increase_course_files_limit_25mb.sql`
 - `db/seed/001_ns218_weeks.sql`
 
 5. Run local app:
@@ -53,11 +54,13 @@ npm run dev
 ## Storage
 
 - Bucket: `course-files`
+- Max file size: `25 MB`
 - Allowed file types:
   - PDF
   - PNG/JPG/WEBP
   - DOC/DOCX
   - PPT/PPTX
+- Upload flow: files go directly from browser to Supabase Storage, then metadata is saved through `POST /api/uploads`.
 
 ## API routes
 

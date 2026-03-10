@@ -52,15 +52,15 @@ export function WeekEditForm({ week }: WeekEditFormProps) {
   }
 
   return (
-    <form className="card" onSubmit={onSubmit}>
+    <form className="card form-stack" onSubmit={onSubmit}>
       <h4 style={{ marginTop: 0 }}>Week {week.week_index}</h4>
       <label>
         Title
-        <input value={title} onChange={(e) => setTitle(e.target.value)} required />
+        <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} required />
       </label>
       <label>
         Act
-        <input value={act} onChange={(e) => setAct(e.target.value)} />
+        <input type="text" value={act} onChange={(e) => setAct(e.target.value)} />
       </label>
       <label>
         Start date

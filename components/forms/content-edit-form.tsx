@@ -46,13 +46,13 @@ export function ContentEditForm({ content }: ContentEditFormProps) {
   }
 
   return (
-    <form className="card" onSubmit={onSubmit}>
+    <form className="card form-stack" onSubmit={onSubmit}>
       <h4 style={{ marginTop: 0 }}>
         {CONTENT_TYPE_LABELS[content.type]}: {content.title}
       </h4>
       <label>
         Title
-        <input value={title} onChange={(e) => setTitle(e.target.value)} required />
+        <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} required />
       </label>
       <label>
         Body

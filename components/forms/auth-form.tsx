@@ -59,7 +59,7 @@ export function AuthForm({ mode }: AuthFormProps) {
   }
 
   return (
-    <form className="card" onSubmit={onSubmit}>
+    <form className="card form-stack auth-form" onSubmit={onSubmit}>
       <h1 className="page-title" style={{ fontFamily: "var(--font-display), sans-serif" }}>
         {isSignup ? "Create Account" : "Login"}
       </h1>
@@ -70,27 +70,28 @@ export function AuthForm({ mode }: AuthFormProps) {
       </p>
 
       {isSignup ? (
-        <label>
-          Display name
-          <input value={displayName} onChange={(event) => setDisplayName(event.target.value)} required />
-        </label>
+        <div className="field">
+          <label htmlFor="display-name">Display name</label>
+          <input id="display-name" type="text" value={displayName} onChange={(event) => setDisplayName(event.target.value)} required />
+        </div>
       ) : null}
 
-      <label>
-        Email
-        <input type="email" value={email} onChange={(event) => setEmail(event.target.value)} required />
-      </label>
+      <div className="field">
+        <label htmlFor="email">Email</label>
+        <input id="email" type="email" value={email} onChange={(event) => setEmail(event.target.value)} required />
+      </div>
 
-      <label>
-        Password
+      <div className="field">
+        <label htmlFor="password">Password</label>
         <input
+          id="password"
           type="password"
           value={password}
           minLength={6}
           onChange={(event) => setPassword(event.target.value)}
           required
         />
-      </label>
+      </div>
 
       <button disabled={loading}>{loading ? "Working..." : isSignup ? "Create account" : "Login"}</button>
       {message ? <p className="subtle">{message}</p> : null}

@@ -44,7 +44,7 @@ export function WeekEditorForm() {
   }
 
   return (
-    <form className="card" onSubmit={onSubmit}>
+    <form className="card form-stack" onSubmit={onSubmit}>
       <h3 className="section-title">Create Week</h3>
 
       <label>
@@ -54,12 +54,12 @@ export function WeekEditorForm() {
 
       <label>
         Title
-        <input value={title} onChange={(e) => setTitle(e.target.value)} required />
+        <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} required />
       </label>
 
       <label>
         Act
-        <input value={act} onChange={(e) => setAct(e.target.value)} placeholder="Act I / Act II / Exam" />
+        <input type="text" value={act} onChange={(e) => setAct(e.target.value)} placeholder="Act I / Act II / Exam" />
       </label>
 
       <label>
