@@ -1,0 +1,225 @@
+.notification-bell-container {
+  position: relative;
+}
+
+.notification-bell-button {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  font-size: 1.3rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.notification-bell-button:hover {
+  background: var(--surface-soft);
+}
+
+.notification-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 10px;
+  background: var(--danger);
+  color: white;
+  font-size: 0.7rem;
+  font-weight: 700;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+}
+
+.notification-bell-placeholder {
+  width: 40px;
+  height: 40px;
+}
+
+.notification-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 0.5rem;
+  width: 320px;
+  max-height: 400px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  display: flex;
+  flex-direction: column;
+  animation: slideDown 0.2s ease-out;
+  z-index: 1000;
+}
+
+html.dark .notification-dropdown {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.notification-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.notification-header h3 {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.notification-count {
+  display: inline-block;
+  padding: 0.2rem 0.5rem;
+  border-radius: 6px;
+  background: var(--danger);
+  color: white;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.notification-list {
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
+}
+
+.notification-item {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--line);
+  transition: background-color 0.2s ease;
+}
+
+.notification-item.unread {
+  background: var(--badge-bg);
+}
+
+.notification-item:hover {
+  background: var(--surface-soft);
+}
+
+.notification-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.notification-link {
+  display: block;
+  color: var(--accent);
+  text-decoration: none;
+  word-break: break-word;
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+
+.notification-content:hover .notification-link {
+  color: var(--accent-strong);
+  text-decoration: underline;
+}
+
+.notification-item p {
+  margin: 0;
+  word-break: break-word;
+  color: var(--ink);
+}
+
+.notification-time {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--ink-muted);
+  margin-top: 0.25rem;
+}
+
+.notification-actions {
+  display: flex;
+  gap: 0.25rem;
+  align-self: flex-start;
+}
+
+.notification-action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--ink-muted);
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.notification-action-btn:hover {
+  background: var(--line);
+  color: var(--ink);
+}
+
+.notification-action-btn.delete:hover {
+  background: var(--danger);
+  color: white;
+}
+
+.notification-footer-btn {
+  padding: 0.6rem 1rem;
+  border: none;
+  border-top: 1px solid var(--line);
+  background: transparent;
+  color: var(--accent);
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.notification-footer-btn:hover {
+  background: var(--surface-soft);
+  color: var(--accent-strong);
+}
+
+.notification-empty,
+.notification-error {
+  padding: 2rem 1rem;
+  text-align: center;
+  color: var(--ink-muted);
+  font-size: 0.9rem;
+}
+
+.notification-error {
+  color: var(--danger);
+}

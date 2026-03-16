@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useState } from "react";
+import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 
 export interface EditableWeek {
@@ -16,85 +17,83 @@ export interface EditableWeek {
 
 interface WeekEditFormProps {
   week: EditableWeek;
+  onSuccess?: () => void;
 }
 
-export function WeekEditForm({ week }: WeekEditFormProps) {
+export function WeekEditForm({ week, onSuccess }: WeekEditFormProps) {
   const router = useRouter();
   const [title, setTitle] = useState(week.title);
   const [act, setAct] = useState(week.act ?? "");
   const [startDate, setStartDate] = useState(week.start_date);
   const [published, setPublished] = useState(week.published);
   const [isExamWeek, setIsExamWeek] = useState(week.is_exam_week);
-  const [archivedAt, setArchivedAt] = useState(week.archived_at);
-  const [status, setStatus] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [archiveBusy, setArchiveBusy] = useState(false);
 
   async function onSubmit(event: FormEvent) {
     event.preventDefault();
-    setStatus(null);
     setBusy(true);
 
     const response = await fetch(`/api/teacher/weeks/${week.id}`, {
       method: "PATCH",
-      headers: {
-        "Content-Type": "application/json"
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         title,
         act: act || null,
         start_date: startDate,
         published,
-        is_exam_week: isExamWeek
-      })
+        is_exam_week: isExamWeek,
+      }),
     });
 
     const payload = await response.json();
+    setBusy(false);
+
     if (!response.ok) {
-      setStatus(payload.error ?? "Update failed");
-      setBusy(false);
+      toast.error(payload.error ?? "Update failed");
       return;
     }
 
-    setStatus("Saved");
-    setBusy(false);
+    toast.success("Week saved");
     router.refresh();
+    onSuccess?.();
   }
 
   async function onArchiveToggle() {
-    setStatus(null);
-    setBusy(true);
+    setArchiveBusy(true);
+    const isArchived = !!week.archived_at;
 
-    if (!archivedAt) {
-      const confirmed = window.confirm(`Archive Week ${week.week_index}? Students will no longer see it.`);
-      if (!confirmed) {
-        setBusy(false);
-        return;
-      }
+    let response: Response;
+    if (isArchived) {
+      response = await fetch(`/api/teacher/weeks/${week.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ archived_at: null }),
+      });
+    } else {
+      response = await fetch(`/api/teacher/weeks/${week.id}`, { method: "DELETE" });
     }
 
-    const response = await fetch(
-      archivedAt ? `/api/teacher/weeks/${week.id}/restore` : `/api/teacher/weeks/${week.id}`,
-      { method: archivedAt ? "POST" : "DELETE" }
-    );
     const payload = await response.json();
+    setArchiveBusy(false);
 
     if (!response.ok) {
-      setStatus(payload.error ?? "Week action failed");
-      setBusy(false);
+      toast.error(payload.error ?? (isArchived ? "Restore failed" : "Archive failed"));
       return;
     }
 
-    setArchivedAt(payload.week.archived_at ? String(payload.week.archived_at) : null);
-    setStatus(archivedAt ? "Week restored" : "Week archived");
-    setBusy(false);
+    toast.success(isArchived ? "Week restored" : "Week archived");
     router.refresh();
+    onSuccess?.();
   }
 
   return (
-    <form className="card form-stack" onSubmit={onSubmit}>
-      <h4 style={{ marginTop: 0 }}>
-        Week {week.week_index} {archivedAt ? "(Archived)" : ""}
-      </h4>
+    <form className="form-stack" onSubmit={onSubmit}>
+      {week.archived_at && (
+        <p className="subtle" style={{ margin: 0 }}>
+          Archived {new Date(week.archived_at).toLocaleDateString()}
+        </p>
+      )}
       <label>
         Title
         <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} required />
@@ -113,27 +112,19 @@ export function WeekEditForm({ week }: WeekEditFormProps) {
       <label>
         <input type="checkbox" checked={isExamWeek} onChange={(e) => setIsExamWeek(e.target.checked)} /> Exam week
       </label>
-
-      {archivedAt ? (
-        <p className="subtle" style={{ margin: 0 }}>
-          Archived at {new Date(archivedAt).toLocaleString()}
-        </p>
-      ) : null}
-
-      <div className="row">
-        <button className="secondary" disabled={busy}>
-          {busy ? "Working..." : "Save week"}
-        </button>
-        <button
-          className={archivedAt ? "secondary" : "danger"}
-          type="button"
-          onClick={onArchiveToggle}
-          disabled={busy}
-        >
-          {busy ? "Working..." : archivedAt ? "Restore" : "Archive"}
-        </button>
-      </div>
-      {status ? <p className="subtle">{status}</p> : null}
+      <button disabled={busy}>{busy ? "Saving…" : "Save week"}</button>
+      <hr style={{ border: "none", borderTop: "1px solid var(--line)", margin: "0.5rem 0" }} />
+      <button
+        type="button"
+        className="secondary"
+        style={{ color: week.archived_at ? undefined : "var(--error, #dc2626)" }}
+        disabled={archiveBusy}
+        onClick={onArchiveToggle}
+      >
+        {archiveBusy
+          ? week.archived_at ? "Restoring…" : "Archiving…"
+          : week.archived_at ? "Restore week" : "Archive week"}
+      </button>
     </form>
   );
 }

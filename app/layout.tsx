@@ -3,8 +3,8 @@ import { Space_Grotesk, Literata } from "next/font/google";
 import "./globals.css";
 import { NavBar } from "@/components/layout/nav";
 import { getCurrentProfile } from "@/lib/auth";
-import { getAppThemeVariables } from "@/lib/theme";
 import type { CSSProperties } from "react";
+import { Toaster } from "sonner";
 
 const displayFont = Space_Grotesk({
   variable: "--font-display",
@@ -27,17 +27,14 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const profile = await getCurrentProfile();
-  const themeVars = getAppThemeVariables(profile?.theme_token);
-  const bodyStyle = {
-    fontFamily: "var(--font-text), serif",
-    ...themeVars
-  } as CSSProperties;
+  const themeToken = profile?.theme_token ?? "sage";
 
   return (
-    <html lang="en" className={`${displayFont.variable} ${textFont.variable}`}>
-      <body style={bodyStyle}>
+    <html lang="en" data-theme={themeToken} className={`${displayFont.variable} ${textFont.variable}`}>
+      <body style={{ fontFamily: "var(--font-text), serif" } as CSSProperties}>
         <NavBar profile={profile} />
         <main>{children}</main>
+        <Toaster richColors position="bottom-right" />
       </body>
     </html>
   );

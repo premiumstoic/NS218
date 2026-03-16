@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { parseJsonBody, apiError } from "@/lib/api";
 import { requireApiProfile } from "@/lib/api-auth";
 import { commentCreateSchema } from "@/lib/validators/api";
+import { notifyCommentReply } from "@/lib/notifications";
 
 export async function POST(request: Request) {
   try {
@@ -23,6 +24,29 @@ export async function POST(request: Request) {
 
     if (error) {
       throw error;
+    }
+
+    // Notify other users who commented on the same target
+    const { data: otherComments } = await auth.supabase
+      .from("comments")
+      .select("author_id")
+      .eq("target_type", payload.target_type)
+      .eq("target_id", payload.target_id)
+      .neq("author_id", auth.profile.id);
+
+    if (otherComments && otherComments.length > 0) {
+      // Get unique user IDs
+      const uniqueUserIds = [...new Set(otherComments.map((c) => c.author_id))];
+
+      // Notify each user
+      for (const userId of uniqueUserIds) {
+        await notifyCommentReply(
+          userId,
+          auth.profile.display_name || auth.profile.email || "Someone",
+          payload.target_type,
+          payload.target_id
+        );
+      }
     }
 
     return NextResponse.json(

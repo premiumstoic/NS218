@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { CONTENT_TYPE_LABELS } from "@/lib/constants";
@@ -6,6 +7,7 @@ import { QuizRunner } from "@/components/content/quiz-runner";
 import { SimulationViewer } from "@/components/content/simulation-viewer";
 import { CommentSection } from "@/components/discussion/comment-section";
 import { getCurrentProfile } from "@/lib/auth";
+import { ProgressTracker } from "@/components/progress/progress-tracker";
 
 type FlashcardRow = {
   id: string;
@@ -41,7 +43,7 @@ export default async function ContentDetailPage({ params }: { params: Promise<{ 
 
   const { data: week } = await supabase
     .from("weeks")
-    .select("id")
+    .select("id,week_index,title")
     .eq("id", content.week_id)
     .eq("published", true)
     .is("archived_at", null)
@@ -60,7 +62,6 @@ export default async function ContentDetailPage({ params }: { params: Promise<{ 
       .select("id,front,back,order_index")
       .eq("content_item_id", content.id)
       .order("order_index", { ascending: true });
-
     flashcardsData = (data ?? []) as FlashcardRow[];
   }
 
@@ -70,37 +71,59 @@ export default async function ContentDetailPage({ params }: { params: Promise<{ 
       .select("id,prompt,question_type,explanation,order_index,quiz_options(id,text,order_index)")
       .eq("content_item_id", content.id)
       .order("order_index", { ascending: true });
-
     quizQuestionData = (data ?? []) as QuizRow[];
   }
 
-  return (
-    <div className="grid">
-      <section className="card">
-        <span className="badge">{CONTENT_TYPE_LABELS[content.type as keyof typeof CONTENT_TYPE_LABELS]}</span>
-        <h1 className="page-title" style={{ fontFamily: "var(--font-display), sans-serif", marginTop: "0.6rem" }}>
-          {content.title}
-        </h1>
-      </section>
+  const typeLabel = CONTENT_TYPE_LABELS[content.type as keyof typeof CONTENT_TYPE_LABELS];
 
-      {content.type === "note" || content.type === "resource" ? (
+  return (
+    <div className="student-page">
+      {/* Breadcrumb */}
+      <nav className="breadcrumb">
+        <Link href="/weeks">Weeks</Link>
+        <span className="breadcrumb__sep">›</span>
+        <Link href={`/weeks/${week.id}`}>Week {week.week_index}</Link>
+        <span className="breadcrumb__sep">›</span>
+        <span>{content.title}</span>
+      </nav>
+
+      {/* Header */}
+      <header className="week-hero">
+        <div className="week-hero__meta">
+          <span className="badge">{typeLabel}</span>
+        </div>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "1rem" }}>
+          <h1 className="week-hero__title">{content.title}</h1>
+          {profile?.role === "student" && (
+            <ProgressTracker weekId={content.week_id} contentItemId={content.id} />
+          )}
+        </div>
+      </header>
+
+      {/* Note / Resource body */}
+      {(content.type === "note" || content.type === "resource") && (
         <section className="card">
-          <h2 className="section-title">Content</h2>
           {content.body?.startsWith("http") ? (
-            <a href={content.body}>{content.body}</a>
+            <a href={content.body} target="_blank" rel="noopener noreferrer" className="button secondary">
+              Open resource ↗
+            </a>
           ) : (
-            <pre style={{ whiteSpace: "pre-wrap", fontFamily: "inherit" }}>{content.body ?? "No content body"}</pre>
+            <div className="note-body">
+              {(content.body ?? "No content body").split("\n\n").map((para: string, i: number) => (
+                <p key={i}>{para}</p>
+              ))}
+            </div>
           )}
         </section>
-      ) : null}
+      )}
 
-      {content.type === "flashcards" ? <FlashcardDeck flashcards={flashcardsData} /> : null}
+      {content.type === "flashcards" && <FlashcardDeck flashcards={flashcardsData} />}
 
-      {content.type === "quiz" ? (
+      {content.type === "quiz" && (
         <QuizRunner contentId={content.id} questions={quizQuestionData} canAttempt={Boolean(profile)} />
-      ) : null}
+      )}
 
-      {content.type === "simulation" ? <SimulationViewer body={content.body} /> : null}
+      {content.type === "simulation" && <SimulationViewer body={content.body} />}
 
       <CommentSection targetType="content_item" targetId={content.id} />
     </div>

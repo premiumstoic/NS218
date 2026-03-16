@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import "./flashcard-deck.css";
 
 type Flashcard = {
   id: string;
@@ -17,6 +18,7 @@ export function FlashcardDeck({ flashcards }: FlashcardDeckProps) {
   const sorted = [...flashcards].sort((a, b) => a.order_index - b.order_index);
   const [index, setIndex] = useState(0);
   const [showBack, setShowBack] = useState(false);
+  const [isFlipping, setIsFlipping] = useState(false);
 
   if (sorted.length === 0) {
     return <p className="subtle">No flashcards yet.</p>;
@@ -24,16 +26,28 @@ export function FlashcardDeck({ flashcards }: FlashcardDeckProps) {
 
   const card = sorted[index];
 
+  function handleFlip() {
+    setIsFlipping(true);
+    setTimeout(() => {
+      setShowBack((prev) => !prev);
+      setIsFlipping(false);
+    }, 300);
+  }
+
   return (
     <div className="grid">
-      <div className="card" style={{ minHeight: "180px", display: "grid", placeContent: "center" }}>
-        <p style={{ fontSize: "1.1rem", textAlign: "center" }}>{showBack ? card.back : card.front}</p>
+      <div className={`flashcard-container ${isFlipping ? "flipping" : ""}`}>
+        <div className="flashcard">
+          <p className="flashcard-text">{showBack ? card.back : card.front}</p>
+        </div>
       </div>
       <div className="row">
         <button className="secondary" onClick={() => setIndex((prev) => Math.max(0, prev - 1))} disabled={index === 0}>
           Previous
         </button>
-        <button onClick={() => setShowBack((prev) => !prev)}>{showBack ? "Show Front" : "Show Back"}</button>
+        <button onClick={handleFlip} disabled={isFlipping}>
+          {showBack ? "Show Front" : "Show Back"}
+        </button>
         <button
           className="secondary"
           onClick={() => setIndex((prev) => Math.min(sorted.length - 1, prev + 1))}

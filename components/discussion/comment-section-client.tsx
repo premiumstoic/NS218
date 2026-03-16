@@ -2,6 +2,8 @@
 
 import { FormEvent, useMemo, useState } from "react";
 import { getThemeCardStyle } from "@/lib/theme";
+import { sanitizeHtml } from "@/lib/sanitize";
+import { RichTextEditor } from "@/components/forms/rich-text-editor";
 
 type CommentRecord = {
   id: string;
@@ -43,12 +45,17 @@ export function CommentSectionClient({
 
   async function submitComment(event: FormEvent) {
     event.preventDefault();
-    if (!body.trim()) {
+    if (!body.trim() || body === "<p></p>") {
       return;
     }
 
     setLoading(true);
     setError(null);
+
+    // Extract plain text for storage and sanitize HTML for display
+    const tempDiv = document.createElement("div");
+    tempDiv.innerHTML = body;
+    const plainText = tempDiv.textContent || "";
 
     const response = await fetch("/api/comments", {
       method: "POST",
@@ -58,7 +65,7 @@ export function CommentSectionClient({
       body: JSON.stringify({
         target_type: targetType,
         target_id: targetId,
-        body: body.trim()
+        body: plainText.trim()
       })
     });
 
@@ -128,7 +135,7 @@ export function CommentSectionClient({
         <form onSubmit={submitComment}>
           <label>
             Add a comment
-            <textarea value={body} onChange={(event) => setBody(event.target.value)} maxLength={3000} />
+            <RichTextEditor value={body} onChange={setBody} placeholder="Share your thoughts..." maxLength={3000} />
           </label>
           <button disabled={loading}>{loading ? "Posting..." : "Post comment"}</button>
           {error ? <p style={{ color: "var(--danger)" }}>{error}</p> : null}

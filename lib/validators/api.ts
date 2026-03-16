@@ -11,7 +11,9 @@ export const weekCreateSchema = z.object({
   published: z.coerce.boolean().default(false)
 });
 
-export const weekPatchSchema = weekCreateSchema.partial();
+export const weekPatchSchema = weekCreateSchema.partial().extend({
+  archived_at: z.string().datetime().nullable().optional(),
+});
 
 export const contentCreateSchema = z.object({
   week_id: z.string().uuid(),

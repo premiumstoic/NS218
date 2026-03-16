@@ -1,0 +1,43 @@
+.progress-tracker {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.progress-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.4rem 0.7rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 8px;
+  background: var(--surface-soft);
+  color: var(--ink);
+  border: 1px solid var(--line);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.progress-button:hover:not(:disabled) {
+  background: var(--badge-bg);
+  border-color: var(--accent);
+  color: var(--accent-strong);
+}
+
+.progress-button.completed {
+  background: var(--badge-bg);
+  color: var(--accent-strong);
+  border-color: var(--accent);
+  cursor: default;
+}
+
+.progress-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.progress-error {
+  color: var(--danger);
+  font-size: 0.85rem;
+}
